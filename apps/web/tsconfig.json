@@ -20,7 +20,9 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@database/*": ["../../packages/database/src/*"],
+      "@shared/*": ["../../packages/shared/src/*"]
     }
   },
   "include": ["src"],
