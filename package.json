@@ -1,0 +1,29 @@
+{
+  "name": "random-academic-app",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Cross-platform academic reading app",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w apps/web",
+    "dev": "npm run dev:web",
+    "build:web": "npm run build -w apps/web",
+    "build": "npm run build:web",
+    "lint": "npm run lint -w apps/web"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.1",
+    "epubjs": "^0.3.93",
+    "react-pdf": "^10.4.1",
+    "zustand": "^5.0.12"
+  }
+}

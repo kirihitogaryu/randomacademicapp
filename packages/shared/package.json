@@ -1,0 +1,11 @@
+{
+  "name": "@shared/core",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared utilities and Supabase client for Random Academic App",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
