@@ -10,19 +10,24 @@
 
 @layer components {
   .card {
-    @apply bg-background-secondary rounded-lg p-4 border border-white/5;
+    @apply bg-background-secondary rounded-lg p-4 border border-white/[0.06];
   }
 
+  /* On hover: slightly lighter bg + border brightens slightly */
   .card-hover {
-    @apply hover:bg-background-tertiary transition-colors cursor-pointer;
+    @apply transition-colors cursor-pointer;
+    @apply hover:bg-background-tertiary hover:border-white/[0.10];
   }
 
+  /* Primary action: restrained ghost — no alarming solid color fills */
   .btn-primary {
-    @apply bg-accent-primary hover:bg-accent-primary/90 text-white px-4 py-2 rounded-md transition-colors;
+    @apply bg-background-tertiary hover:bg-white/10 text-foreground-primary
+           border border-white/10 px-4 py-2 rounded-md transition-colors;
   }
 
   .btn-secondary {
-    @apply bg-background-tertiary hover:bg-white/10 text-foreground-primary px-4 py-2 rounded-md transition-colors;
+    @apply bg-transparent hover:bg-background-tertiary text-foreground-secondary
+           hover:text-foreground-primary px-3 py-2 rounded-md transition-colors;
   }
 }
 
@@ -52,9 +57,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-foreground-secondary/30 rounded-full;
+  @apply bg-foreground-secondary/20 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-foreground-secondary/50;
+  @apply bg-foreground-secondary/35;
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from './store/authStore'
 import { useUIStore } from './store/uiStore'
@@ -10,6 +10,7 @@ import { PDFReader } from './components/PDFReader'
 import { EPUBReader } from './components/EPUBReader'
 import { TextReader } from './components/TextReader'
 import { useDocuments, useFolders, useCreateFolder, useUploadFile, useCreateDocument } from './hooks/useSupabase'
+import { extractPDFMetadata } from './lib/extractPDFMetadata'
 
 function App() {
   const { user, signOut, loading: authLoading } = useAuthStore()
@@ -29,12 +30,25 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [fileUrl, setFileUrl] = useState<string>('')
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
   const { data: documents = [], isLoading: docsLoading } = useDocuments(user?.id)
   const { data: folders = [] } = useFolders(user?.id)
   const createFolder = useCreateFolder()
   const uploadFile = useUploadFile()
   const createDocument = useCreateDocument()
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   const handleUploadComplete = async (files: File[]) => {
     if (!user) return
@@ -47,7 +61,15 @@ function App() {
 
       const path = `${user.id}/${sanitizedName}`
       const fileType = file.name.split('.').pop()?.toLowerCase() || 'txt'
-      const title = file.name.replace(/\.[^/.]+$/, '')
+
+      // Extract embedded metadata from PDFs before uploading
+      let title = file.name.replace(/\.[^/.]+$/, '')
+      let author: string | undefined
+      if (fileType === 'pdf') {
+        const meta = await extractPDFMetadata(file)
+        if (meta.title) title = meta.title
+        if (meta.author) author = meta.author
+      }
 
       await uploadFile.mutateAsync({ file, userId: user.id, path })
       await createDocument.mutateAsync({
@@ -56,6 +78,7 @@ function App() {
         file_name: file.name,
         file_type: fileType as 'pdf' | 'epub' | 'txt' | 'md' | 'html',
         storage_path: path,
+        ...(author ? { author } : {}),
       })
     }
 
@@ -121,36 +144,40 @@ function App() {
     : selectedFolder === 'continue' ? 'Continue Reading'
     : folders.find(f => f.id === selectedFolder)?.name || 'Library'
 
+  // First letter of email for avatar
+  const avatarLetter = user?.email?.[0]?.toUpperCase() ?? '?'
+
   return (
     <div className="min-h-screen bg-background-primary">
       {/* Header */}
-      <header className="h-14 border-b border-white/5 flex items-center justify-between px-4 sticky top-0 bg-background-primary z-10">
+      <header className="h-12 border-b border-white/[0.06] flex items-center justify-between px-4 sticky top-0 bg-background-primary z-10">
         <div className="flex items-center gap-3">
           <button
             onClick={toggleSidebar}
-            className="p-2 hover:bg-background-tertiary rounded-md transition-colors"
+            className="p-1.5 hover:bg-background-tertiary rounded transition-colors text-foreground-secondary hover:text-foreground-primary"
             aria-label="Toggle sidebar"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <h1 className="font-display text-lg text-foreground-primary tracking-wide">
+          <h1 className="font-display text-base text-foreground-primary">
             Legendum
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Search */}
           <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search library..."
-              className="w-64 px-3 py-1.5 pl-9 bg-background-secondary border border-white/10 rounded-md text-sm text-foreground-primary placeholder-foreground-secondary focus:outline-none focus:ring-2 focus:ring-accent-primary"
+              placeholder="Search…"
+              className="w-56 px-3 py-1.5 pl-8 bg-background-secondary border border-white/[0.08] rounded text-sm text-foreground-primary placeholder-foreground-muted focus:outline-none focus:border-white/20 transition-colors"
             />
             <svg
-              className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground-secondary"
+              className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground-muted"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -159,44 +186,61 @@ function App() {
             </svg>
           </div>
 
-          <div className="flex items-center gap-1 bg-background-secondary rounded-md p-1">
+          {/* View toggle — subtle text buttons, no solid fills */}
+          <div className="flex items-center border border-white/[0.08] rounded overflow-hidden">
             <button
               onClick={() => setViewMode('detailed')}
-              className={`px-2 py-1 rounded text-xs transition-colors ${
+              className={`px-3 py-1.5 text-xs transition-colors ${
                 viewMode === 'detailed'
-                  ? 'bg-accent-primary text-white'
-                  : 'text-foreground-secondary hover:text-foreground-primary'
+                  ? 'bg-background-tertiary text-foreground-primary'
+                  : 'text-foreground-muted hover:text-foreground-secondary'
               }`}
             >
               Detailed
             </button>
+            <div className="w-px h-4 bg-white/[0.08]" />
             <button
               onClick={() => setViewMode('compact')}
-              className={`px-2 py-1 rounded text-xs transition-colors ${
+              className={`px-3 py-1.5 text-xs transition-colors ${
                 viewMode === 'compact'
-                  ? 'bg-accent-primary text-white'
-                  : 'text-foreground-secondary hover:text-foreground-primary'
+                  ? 'bg-background-tertiary text-foreground-primary'
+                  : 'text-foreground-muted hover:text-foreground-secondary'
               }`}
             >
               Compact
             </button>
           </div>
 
+          {/* Upload — restrained, not alarming */}
           <button
             onClick={() => setShowUpload(true)}
-            className="btn-primary text-sm py-1.5"
+            className="px-3 py-1.5 text-xs border border-white/10 rounded text-foreground-secondary hover:text-foreground-primary hover:bg-background-tertiary transition-colors"
           >
             Upload
           </button>
 
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-foreground-secondary">{user?.email}</span>
+          {/* User avatar + dropdown */}
+          <div className="relative" ref={userMenuRef}>
             <button
-              onClick={() => signOut()}
-              className="btn-secondary text-sm py-1.5"
+              onClick={() => setShowUserMenu(v => !v)}
+              className="w-7 h-7 rounded-full bg-background-tertiary border border-white/10 flex items-center justify-center text-xs font-medium text-foreground-secondary hover:text-foreground-primary hover:border-white/20 transition-colors"
+              aria-label="User menu"
             >
-              Sign Out
+              {avatarLetter}
             </button>
+            {showUserMenu && (
+              <div className="absolute right-0 top-9 w-48 bg-background-secondary border border-white/[0.08] rounded-lg shadow-xl py-1 z-50">
+                <div className="px-3 py-2 border-b border-white/[0.06]">
+                  <p className="text-xs text-foreground-muted truncate">{user?.email}</p>
+                </div>
+                <button
+                  onClick={() => { setShowUserMenu(false); signOut() }}
+                  className="w-full text-left px-3 py-2 text-sm text-foreground-secondary hover:text-foreground-primary hover:bg-background-tertiary transition-colors"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -205,10 +249,10 @@ function App() {
         {/* Sidebar */}
         <aside
           className={`${
-            sidebarOpen ? 'w-64' : 'w-0'
-          } transition-all duration-200 border-r border-white/5 overflow-hidden flex-shrink-0`}
+            sidebarOpen ? 'w-60' : 'w-0'
+          } transition-all duration-200 border-r border-white/[0.06] overflow-hidden flex-shrink-0`}
         >
-          <div className="p-4 h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <div className="p-3 h-[calc(100vh-3rem)] overflow-y-auto">
             <FolderSidebar
               folders={folders}
               selectedFolderId={selectedFolder}
@@ -219,37 +263,28 @@ function App() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-display text-foreground-primary">
+        <main className="flex-1 overflow-hidden">
+          <div className="max-w-4xl mx-auto px-6 py-6">
+            <div className="flex items-baseline justify-between mb-5">
+              <h2 className="text-xl font-display text-foreground-primary">
                 {sectionTitle}
               </h2>
-              <span className="text-foreground-secondary text-sm">
-                {filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''}
+              <span className="text-xs text-foreground-muted">
+                {filteredDocuments.length} {filteredDocuments.length === 1 ? 'document' : 'documents'}
               </span>
             </div>
 
             {/* Loading skeleton */}
             {docsLoading && (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="card animate-pulse">
-                    <div className="flex gap-4">
-                      <div className="w-16 h-20 bg-background-tertiary rounded-lg flex-shrink-0" />
-                      <div className="flex-1 space-y-3 py-1">
-                        <div className="h-4 bg-background-tertiary rounded w-3/4" />
-                        <div className="h-3 bg-background-tertiary rounded w-1/2" />
-                        <div className="h-3 bg-background-tertiary rounded w-1/4" />
-                      </div>
-                    </div>
-                  </div>
+                  <div key={i} className="card animate-pulse h-16" />
                 ))}
               </div>
             )}
 
             {!docsLoading && filteredDocuments.length > 0 && (
-              <div className={viewMode === 'compact' ? 'grid grid-cols-2 gap-3' : 'space-y-3'}>
+              <div className={viewMode === 'compact' ? 'grid grid-cols-2 gap-2' : 'space-y-2'}>
                 {filteredDocuments.map(doc => (
                   <DocumentCard
                     key={doc.id}
@@ -263,21 +298,21 @@ function App() {
 
             {!docsLoading && filteredDocuments.length === 0 && (
               <div className="card text-center py-16">
-                <svg className="w-16 h-16 mx-auto text-foreground-secondary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-12 h-12 mx-auto text-foreground-muted mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                <p className="text-foreground-primary text-lg mb-2">
+                <p className="text-foreground-primary mb-1">
                   {searchQuery ? 'No documents found' : 'No documents yet'}
                 </p>
-                <p className="text-foreground-secondary mb-6">
+                <p className="text-foreground-secondary text-sm mb-6">
                   {searchQuery
-                    ? 'Try adjusting your search query'
-                    : 'Get started by uploading your first document'}
+                    ? 'Try a different search'
+                    : 'Upload a PDF, EPUB, or text file to get started'}
                 </p>
                 {!searchQuery && (
                   <button
                     onClick={() => setShowUpload(true)}
-                    className="btn-primary"
+                    className="btn-primary text-sm"
                   >
                     Upload Documents
                   </button>

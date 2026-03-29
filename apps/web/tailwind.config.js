@@ -15,7 +15,8 @@ export default {
         },
         foreground: {
           primary: '#e4e4e7',      // Main text
-          secondary: '#a1a1aa',    // Muted text
+          secondary: '#8888a0',    // Muted text (slightly cooler)
+          muted: '#52526a',        // Very dim — dates, tertiary metadata
         },
         accent: {
           primary: '#6366f1',      // Indigo - primary actions
