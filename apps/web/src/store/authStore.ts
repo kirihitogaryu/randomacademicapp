@@ -16,7 +16,7 @@ interface AuthState {
   refreshSession: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>((set, get) => {
+export const useAuthStore = create<AuthState>((set, _get) => {
   const supabase = getSupabaseClient()
 
   // Initialize auth state on mount (only if credentials exist)

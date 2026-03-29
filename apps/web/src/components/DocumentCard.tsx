@@ -1,4 +1,4 @@
-import type { Document as DocumentType } from '../../packages/database/src/types'
+import type { Document as DocumentType } from '@database/types'
 
 interface DocumentCardProps {
   document: DocumentType
@@ -6,55 +6,38 @@ interface DocumentCardProps {
   onClick?: () => void
 }
 
+const FILE_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+  pdf:  { label: 'PDF',  color: 'text-rose-400 bg-rose-400/10' },
+  epub: { label: 'EPUB', color: 'text-blue-400 bg-blue-400/10' },
+  txt:  { label: 'TXT',  color: 'text-zinc-400 bg-zinc-400/10' },
+  md:   { label: 'MD',   color: 'text-purple-400 bg-purple-400/10' },
+  html: { label: 'HTML', color: 'text-orange-400 bg-orange-400/10' },
+}
+
+function FileTypeBadge({ type }: { type: string }) {
+  const config = FILE_TYPE_CONFIG[type] ?? { label: type.toUpperCase(), color: 'text-zinc-400 bg-zinc-400/10' }
+  return (
+    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide ${config.color}`}>
+      {config.label}
+    </span>
+  )
+}
+
 export function DocumentCard({ document, viewMode = 'detailed', onClick }: DocumentCardProps) {
-  const getFileTypeIcon = (type: string) => {
-    switch (type) {
-      case 'pdf':
-        return (
-          <svg className="w-6 h-6 text-red-400" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
-          </svg>
-        )
-      case 'epub':
-        return (
-          <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
-          </svg>
-        )
-      default:
-        return (
-          <svg className="w-6 h-6 text-foreground-secondary" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
-          </svg>
-        )
-    }
-  }
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return ''
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
   if (viewMode === 'compact') {
     return (
       <div
         onClick={onClick}
-        className="card card-hover cursor-pointer p-3"
+        className="card card-hover cursor-pointer p-3 group"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center bg-background-primary rounded">
-            {getFileTypeIcon(document.file_type)}
-          </div>
+          <FileTypeBadge type={document.file_type} />
           <div className="flex-1 min-w-0">
-            <h3 className="text-foreground-primary text-sm font-medium truncate">
+            <h3 className="text-foreground-primary text-sm font-medium truncate group-hover:text-white transition-colors">
               {document.title}
             </h3>
             {document.author && (
-              <p className="text-foreground-secondary text-xs truncate">
+              <p className="text-foreground-secondary text-xs truncate mt-0.5">
                 {document.author}
               </p>
             )}
@@ -68,59 +51,53 @@ export function DocumentCard({ document, viewMode = 'detailed', onClick }: Docum
   return (
     <div
       onClick={onClick}
-      className="card card-hover cursor-pointer"
+      className="card card-hover cursor-pointer group"
     >
       <div className="flex gap-4">
-        {/* Document Icon / Cover */}
-        <div className="w-16 h-20 flex items-center justify-center bg-background-primary rounded-lg flex-shrink-0">
-          {getFileTypeIcon(document.file_type)}
+        {/* Left column: type badge + date added */}
+        <div className="flex flex-col items-center gap-2 pt-0.5 flex-shrink-0 w-14">
+          <FileTypeBadge type={document.file_type} />
+          {document.created_at && (
+            <span className="text-[10px] text-foreground-secondary text-center leading-tight">
+              {new Date(document.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
         </div>
 
-        {/* Content */}
+        {/* Right column: metadata */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-foreground-primary font-medium mb-1 line-clamp-2">
+          <h3 className="text-foreground-primary font-medium leading-snug mb-1 line-clamp-2 group-hover:text-white transition-colors">
             {document.title}
           </h3>
-          
+
           {document.author && (
             <p className="text-foreground-secondary text-sm mb-2">
               {document.author}
             </p>
           )}
 
-          {/* Metadata */}
-          <div className="flex items-center gap-3 text-xs text-foreground-secondary mb-2">
-            {document.journal && (
-              <span className="truncate">{document.journal}</span>
-            )}
-            {document.publication_date && (
-              <>
-                <span>•</span>
-                <span>{formatDate(document.publication_date)}</span>
-              </>
-            )}
-            <span>•</span>
-            <span className="uppercase">{document.file_type}</span>
-          </div>
-
-          {/* DOI */}
-          {document.doi && (
-            <p className="text-xs text-foreground-secondary font-mono bg-background-tertiary inline-block px-2 py-1 rounded mb-2">
-              DOI: {document.doi}
+          {/* Journal + year in one line */}
+          {(document.journal || document.publication_date) && (
+            <p className="text-foreground-secondary text-xs mb-2 italic">
+              {[document.journal, document.publication_date ? new Date(document.publication_date).getFullYear() : null]
+                .filter(Boolean)
+                .join(', ')}
             </p>
           )}
 
-          {/* Abstract Preview */}
+          {/* DOI pill */}
+          {document.doi && (
+            <p className="text-xs text-foreground-secondary font-mono bg-background-primary inline-block px-2 py-0.5 rounded mb-2 border border-white/5">
+              {document.doi}
+            </p>
+          )}
+
+          {/* Abstract preview */}
           {document.abstract && (
-            <p className="text-foreground-secondary text-sm line-clamp-2 mb-3">
+            <p className="text-foreground-secondary text-sm line-clamp-2 leading-relaxed">
               {document.abstract}
             </p>
           )}
-
-          {/* Footer */}
-          <div className="flex items-center justify-between text-xs text-foreground-secondary">
-            <span>Added {formatDate(document.created_at)}</span>
-          </div>
         </div>
       </div>
     </div>

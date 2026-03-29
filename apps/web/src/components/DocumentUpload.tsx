@@ -16,14 +16,6 @@ export function DocumentUpload({ onUploadComplete, onClose }: DocumentUploadProp
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const acceptedTypes = {
-    'application/pdf': ['.pdf'],
-    'application/epub+zip': ['.epub'],
-    'text/plain': ['.txt'],
-    'text/markdown': ['.md'],
-    'text/html': ['.html'],
-  }
-
   const handleFiles = useCallback((newFiles: File[]) => {
     const validFiles = newFiles.filter(file => {
       const ext = file.name.split('.').pop()?.toLowerCase()
