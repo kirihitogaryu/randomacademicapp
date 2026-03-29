@@ -150,19 +150,19 @@ function App() {
   return (
     <div className="min-h-screen bg-background-primary">
       {/* Header */}
-      <header className="h-12 border-b border-white/[0.06] flex items-center justify-between px-4 sticky top-0 bg-background-primary z-10">
+      <header className="h-14 border-b border-border-subtle flex items-center justify-between px-4 sticky top-0 bg-background-primary z-10">
         <div className="flex items-center gap-3">
           <button
             onClick={toggleSidebar}
-            className="p-1.5 hover:bg-background-tertiary rounded transition-colors text-foreground-secondary hover:text-foreground-primary"
+            className="p-1.5 hover:bg-background-highlight transition-colors text-foreground-secondary hover:text-foreground-primary"
             aria-label="Toggle sidebar"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <h1 className="font-display text-base text-foreground-primary">
-            Legendum
+          <h1 className="app-title text-3xl">
+            Reader
           </h1>
         </div>
 
@@ -174,7 +174,7 @@ function App() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search…"
-              className="w-56 px-3 py-1.5 pl-8 bg-background-secondary border border-white/[0.08] rounded text-sm text-foreground-primary placeholder-foreground-muted focus:outline-none focus:border-white/20 transition-colors"
+              className="w-56 px-3 py-1.5 pl-8 bg-background-secondary border border-border-subtle text-sm text-foreground-primary placeholder-foreground-muted focus:outline-none focus:border-border-highlight transition-colors"
             />
             <svg
               className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground-muted"
@@ -186,24 +186,24 @@ function App() {
             </svg>
           </div>
 
-          {/* View toggle — subtle text buttons, no solid fills */}
-          <div className="flex items-center border border-white/[0.08] rounded overflow-hidden">
+          {/* View toggle — subtle text buttons */}
+          <div className="flex items-center border border-border-subtle overflow-hidden">
             <button
               onClick={() => setViewMode('detailed')}
               className={`px-3 py-1.5 text-xs transition-colors ${
                 viewMode === 'detailed'
-                  ? 'bg-background-tertiary text-foreground-primary'
+                  ? 'bg-background-highlight text-foreground-primary'
                   : 'text-foreground-muted hover:text-foreground-secondary'
               }`}
             >
               Detailed
             </button>
-            <div className="w-px h-4 bg-white/[0.08]" />
+            <div className="w-px h-4 bg-border-subtle" />
             <button
               onClick={() => setViewMode('compact')}
               className={`px-3 py-1.5 text-xs transition-colors ${
                 viewMode === 'compact'
-                  ? 'bg-background-tertiary text-foreground-primary'
+                  ? 'bg-background-highlight text-foreground-primary'
                   : 'text-foreground-muted hover:text-foreground-secondary'
               }`}
             >
@@ -211,10 +211,10 @@ function App() {
             </button>
           </div>
 
-          {/* Upload — restrained, not alarming */}
+          {/* Upload — restrained */}
           <button
             onClick={() => setShowUpload(true)}
-            className="px-3 py-1.5 text-xs border border-white/10 rounded text-foreground-secondary hover:text-foreground-primary hover:bg-background-tertiary transition-colors"
+            className="px-3 py-1.5 text-xs border border-border-subtle text-foreground-secondary hover:text-foreground-primary hover:bg-background-highlight transition-colors"
           >
             Upload
           </button>
@@ -223,19 +223,19 @@ function App() {
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(v => !v)}
-              className="w-7 h-7 rounded-full bg-background-tertiary border border-white/10 flex items-center justify-center text-xs font-medium text-foreground-secondary hover:text-foreground-primary hover:border-white/20 transition-colors"
+              className="w-7 h-7 flex items-center justify-center text-xs font-medium text-foreground-secondary hover:text-foreground-primary border border-border-subtle hover:border-border-highlight transition-colors"
               aria-label="User menu"
             >
               {avatarLetter}
             </button>
             {showUserMenu && (
-              <div className="absolute right-0 top-9 w-48 bg-background-secondary border border-white/[0.08] rounded-lg shadow-xl py-1 z-50">
-                <div className="px-3 py-2 border-b border-white/[0.06]">
+              <div className="absolute right-0 top-9 w-48 bg-background-secondary border border-border-subtle py-1 z-50">
+                <div className="px-3 py-2 border-b border-border-subtle">
                   <p className="text-xs text-foreground-muted truncate">{user?.email}</p>
                 </div>
                 <button
                   onClick={() => { setShowUserMenu(false); signOut() }}
-                  className="w-full text-left px-3 py-2 text-sm text-foreground-secondary hover:text-foreground-primary hover:bg-background-tertiary transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm text-foreground-secondary hover:text-foreground-primary hover:bg-background-highlight transition-colors"
                 >
                   Sign out
                 </button>
@@ -249,10 +249,10 @@ function App() {
         {/* Sidebar */}
         <aside
           className={`${
-            sidebarOpen ? 'w-60' : 'w-0'
-          } transition-all duration-200 border-r border-white/[0.06] overflow-hidden flex-shrink-0`}
+            sidebarOpen ? 'w-64' : 'w-0'
+          } transition-all duration-200 border-r border-border-subtle overflow-hidden flex-shrink-0 sidebar`}
         >
-          <div className="p-3 h-[calc(100vh-3rem)] overflow-y-auto">
+          <div className="p-3 h-[calc(100vh-3.5rem)] overflow-y-auto">
             <FolderSidebar
               folders={folders}
               selectedFolderId={selectedFolder}
@@ -265,11 +265,11 @@ function App() {
         {/* Main Content */}
         <main className="flex-1 overflow-hidden">
           <div className="max-w-4xl mx-auto px-6 py-6">
-            <div className="flex items-baseline justify-between mb-5">
-              <h2 className="text-xl font-display text-foreground-primary">
+            <div className="flex items-baseline justify-between mb-6 pb-3 border-b border-border-subtle">
+              <h2 className="section-title">
                 {sectionTitle}
               </h2>
-              <span className="text-xs text-foreground-muted">
+              <span className="text-tiny text-foreground-muted">
                 {filteredDocuments.length} {filteredDocuments.length === 1 ? 'document' : 'documents'}
               </span>
             </div>
@@ -284,7 +284,7 @@ function App() {
             )}
 
             {!docsLoading && filteredDocuments.length > 0 && (
-              <div className={viewMode === 'compact' ? 'grid grid-cols-2 gap-2' : 'space-y-2'}>
+              <div className={viewMode === 'compact' ? 'grid grid-cols-2 gap-2' : 'space-y-1'}>
                 {filteredDocuments.map(doc => (
                   <DocumentCard
                     key={doc.id}

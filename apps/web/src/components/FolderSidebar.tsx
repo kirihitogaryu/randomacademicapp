@@ -19,17 +19,16 @@ interface FolderSidebarProps {
 // Shared nav item style — selected gets a left-border accent
 function navItemClass(selected: boolean) {
   return [
-    'flex items-center gap-2 py-1.5 rounded-r cursor-pointer transition-colors text-[13px] select-none',
-    'border-l-2',
+    'flex items-center gap-2 py-2 cursor-pointer transition-colors text-sm select-none',
     selected
-      ? 'border-accent-primary/60 bg-background-tertiary text-foreground-primary pl-2.5'
-      : 'border-transparent text-foreground-secondary hover:text-foreground-primary hover:bg-background-tertiary/50 pl-3',
+      ? 'sidebar-item-active pl-3'
+      : 'sidebar-item pl-3',
   ].join(' ')
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[10px] font-medium text-foreground-muted uppercase tracking-widest px-3 mb-1 mt-4">
+    <div className="sidebar-section-title">
       {children}
     </div>
   )

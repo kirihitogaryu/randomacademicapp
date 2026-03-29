@@ -8,17 +8,17 @@ interface DocumentCardProps {
 
 // Small inline badge — understated color, not a big block
 const TYPE_COLORS: Record<string, string> = {
-  pdf:  'text-rose-400/80  bg-rose-400/8   border-rose-400/15',
-  epub: 'text-blue-400/80  bg-blue-400/8   border-blue-400/15',
-  txt:  'text-zinc-400/70  bg-zinc-400/8   border-zinc-400/15',
-  md:   'text-purple-400/70 bg-purple-400/8 border-purple-400/15',
-  html: 'text-amber-400/70 bg-amber-400/8  border-amber-400/15',
+  pdf:  'text-blue-300/90  bg-blue-400/10   border-border-highlight',
+  epub: 'text-amber-300/90 bg-amber-400/10  border-border-highlight',
+  txt:  'text-zinc-300/80  bg-zinc-400/10   border-border-highlight',
+  md:   'text-purple-300/80 bg-purple-400/10 border-border-highlight',
+  html: 'text-emerald-300/80 bg-emerald-400/10 border-border-highlight',
 }
 
 function TypeBadge({ type }: { type: string }) {
-  const cls = TYPE_COLORS[type] ?? 'text-zinc-400/70 bg-zinc-400/8 border-zinc-400/15'
+  const cls = TYPE_COLORS[type] ?? 'text-zinc-300/80 bg-zinc-400/10 border-border-highlight'
   return (
-    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wider uppercase border ${cls}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase border ${cls}`}>
       {type}
     </span>
   )
@@ -74,7 +74,7 @@ export function DocumentCard({ document, viewMode = 'detailed', onClick }: Docum
       className="card card-hover group px-5 py-4"
     >
       {/* Title */}
-      <h3 className="text-[15px] font-medium text-foreground-primary leading-snug line-clamp-2 mb-1.5 group-hover:text-white transition-colors">
+      <h3 className="doc-title mb-2 line-clamp-2 group-hover:text-white transition-colors">
         {document.title}
       </h3>
 
@@ -91,14 +91,14 @@ export function DocumentCard({ document, viewMode = 'detailed', onClick }: Docum
 
       {/* Abstract — italic, very muted, only when present */}
       {document.abstract && (
-        <p className="text-xs text-foreground-secondary/70 italic mt-2 line-clamp-2 leading-relaxed">
+        <p className="text-xs text-foreground-secondary/70 italic mt-3 line-clamp-2 leading-relaxed">
           {document.abstract}
         </p>
       )}
 
       {/* DOI — monospace pill, only when present */}
       {document.doi && (
-        <p className="mt-2 inline-block text-[10px] font-mono text-foreground-muted bg-background-primary border border-white/[0.06] px-2 py-0.5 rounded">
+        <p className="mt-2 inline-block text-[10px] font-mono text-foreground-muted bg-background-primary border border-border-subtle px-2 py-0.5">
           {document.doi}
         </p>
       )}
