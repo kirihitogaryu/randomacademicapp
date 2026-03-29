@@ -12,4 +12,7 @@ export default defineConfig({
     },
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
+  server: {
+    host: '0.0.0.0',
+  },
 })
