@@ -80,7 +80,7 @@ export function LoginForm() {
 
         {(formError || error) && (
           <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-400 text-sm">
-            {formError || error?.message}
+            {formError || error}
           </div>
         )}
 
